@@ -1,39 +1,22 @@
 #include <iostream>
 #include "Uart.h"
+#include "data/MazeGraph.h"
+#include "MazeGrapherModule.h"
+#include "InstructionModule.h"
 #include <thread>
 #include <chrono>
 
-enum class Instruction : char {
-    Forward = 'F', ForwardStop = 'S', Left90 = 'L', Right90 = 'R', Turn180 = 'T', Beep = 'B', End = 'E', NoOp = 99
-};
 
-enum class Obstacle : short {
-    StopSign = 1, RoadBlock = 2, None = 0
-};
-
-Instruction getNextInstruction();
-char blockingWaitForBase();
-Obstacle getImagePrediction() {return Obstacle::None;};
-void removeNextEdgeFromPath() {};
-void recalcRoute();
-void sendInstructionToBase(Instruction i);
-
-Uart uart("/dev/ttyS0");
 
 int main(int argc, char** argv) {
-    using namespace std::chrono_literals;
-    uart.send(argv[1][0]);
-    char got = 'N';
-    while(got == 'N')
-    {
-      std::cout << "reading file!" << std::endl;
-      got = uart.receive();
-      std::cout << "got: " << got << std::endl;
-      std::this_thread::sleep_for(0.01s);
-    }
+    MazeGrapherModule module("/tmp/maze.png");
+    MazeGraph mazeRepresenation{module.createGraphFromImage()};
+    RoboPosition position{mazeRepresenation.startId, RoboPosition::Direction()};
+    InstructionModule instructionModule{position, mazeRepresenation};
+
     return 0;
 
-
+/*
     recalcRoute();
     while(true) {
         auto response = blockingWaitForBase();
@@ -52,21 +35,5 @@ int main(int argc, char** argv) {
         }
 
         sendInstructionToBase(nextInstruction);
-    }
-}
-
-void sendInstructionToBase(Instruction i) {
-    uart.send(static_cast<char>(i));
-}
-
-char blockingWaitForBase() {
-    return uart.receive();
-}
-
-Instruction getNextInstruction() {
-    return Instruction::NoOp;
-}
-
-void recalcRoute() {
-
+    }*/
 }
