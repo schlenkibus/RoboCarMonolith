@@ -19,9 +19,11 @@ void sendInstructionToBase(Instruction i);
 Uart uart("/dev/ttyS0");
 
 int main(int argc, char** argv) {
-        uart.send(argv[1][0]);
-
+    uart.send(argv[1][0]);
+    std::cout << "got: " << uart.receive() << std::endl;
     return 0;
+
+
     recalcRoute();
     while(true) {
         auto response = blockingWaitForBase();
