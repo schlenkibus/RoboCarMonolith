@@ -18,10 +18,8 @@ void sendInstructionToBase(Instruction i);
 
 Uart uart("/dev/ttyS0");
 
-int main() {
-    for(auto x = 0; x < 50000; x++) {
-        uart.send('F');
-    }
+int main(int argc, char** argv) {
+        uart.send(argv[1][0]);
 
     return 0;
     recalcRoute();
