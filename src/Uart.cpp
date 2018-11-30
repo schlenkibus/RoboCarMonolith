@@ -7,10 +7,11 @@
 #include <termios.h>
 #include <chrono>
 #include <assert.h>
+#include <sys/ioctl.h>
 
 int open_port(const char* port)
 {
-    auto fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
+    auto fd = open(port, O_RDWR | O_NDELAY | O_NOCTTY);
     if(fd == -1)
     {
         std::cout << "open_port: Unable to open /dev/ttyS0." << std::endl;
@@ -29,10 +30,10 @@ int configure_port(int fd)
     struct termios port_settings;
     cfsetispeed(&port_settings, B115200);
     cfsetospeed(&port_settings, B115200);
-    port_settings.c_cflag &= ~PARENB;
-    port_settings.c_cflag &= ~CSTOPB;
-    port_settings.c_cflag &= ~CSIZE;
-    port_settings.c_cflag |= CS8;
+    port_settings.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
+    port_settings.c_cflag |= (CLOCAL | CREAD | CS8);
+    port_settings.c_cc[VMIN]  = 1;
+    port_settings.c_oflag &= ~OPOST;
     tcsetattr(fd, TCSANOW, &port_settings);
     return(fd);
 }
@@ -49,11 +50,19 @@ void Uart::send(char charToSend) {
 }
 
 char Uart::receive() {
-    char c;
-    size_t readBytes = 0;
-    do {
-        readBytes += read(m_fd, &c, 1);
-    } while(readBytes < 1);
-    assert(readBytes == 1);
-    return c;
+  int availableBytes = 0;
+  
+  do {
+    ioctl(m_fd, FIONREAD, &availableBytes);
+  } while(availableBytes == 0);
+
+  char buff[20];
+  auto readBytes = read(m_fd, buff, 20);
+  if(readBytes > 0) {
+    std::cout << "bytes read: " << readBytes << std::endl;
+    return buff[0];
+  } else {
+    std::cerr << "read failed!" << std::endl;
+  }
+  return 'N';
 }

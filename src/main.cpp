@@ -1,5 +1,7 @@
 #include <iostream>
 #include "Uart.h"
+#include <thread>
+#include <chrono>
 
 enum class Instruction : char {
     Forward = 'F', ForwardStop = 'S', Left90 = 'L', Right90 = 'R', Turn180 = 'T', Beep = 'B', End = 'E', NoOp = 99
@@ -19,8 +21,16 @@ void sendInstructionToBase(Instruction i);
 Uart uart("/dev/ttyS0");
 
 int main(int argc, char** argv) {
+    using namespace std::chrono_literals;
     uart.send(argv[1][0]);
-    std::cout << "got: " << uart.receive() << std::endl;
+    char got = 'N';
+    while(got == 'N')
+    {
+      std::cout << "reading file!" << std::endl;
+      got = uart.receive();
+      std::cout << "got: " << got << std::endl;
+      std::this_thread::sleep_for(0.01s);
+    }
     return 0;
 
 
