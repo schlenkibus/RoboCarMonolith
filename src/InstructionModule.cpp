@@ -1,4 +1,8 @@
 #include <utility>
+
+#include <utility>
+
+#include <utility>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -13,19 +17,23 @@
 #include "RoboPosition.h"
 #include "net/Client.h"
 #include <curl/curl.h>
+#include <assert.h>
 
 InstructionModule::InstructionModule(const RoboPosition& pos, const MazeGraph& maze) {
-    setInstructions(parseNodeListToInstructions(getListOfPathNodes(pos, maze), pos, maze));
+    initialize(pos, maze);
 }
+
 
 
 InstructionModule::Instruction InstructionModule::getNextInstruction() {
     auto ret = *currentInstruction;
+    if(currentInstruction + 1 > m_currentPath.end())
+        return InstructionModule::Instruction::End;
     std::advance(currentInstruction, 1);
     return ret;
 }
 
-std::vector<int> parseAnswer(std::string sv) {
+std::vector<int> parseAnswer(const std::string &sv) {
     std::vector<int> strings;
     std::string token;
     std::istringstream tokenStream(sv);
@@ -46,9 +54,10 @@ InstructionModule::getListOfPathNodes(const RoboPosition &p, const MazeGraph &gr
     return parseAnswer(result);
 }
 
-void InstructionModule::setInstructions(std::vector<InstructionModule::Instruction>&& newInstructions) {
-    m_currentPath = std::move(newInstructions);
+void InstructionModule::setInstructions(std::vector<InstructionModule::Instruction> newInstructions) {
+    m_currentPath = newInstructions;
     currentInstruction = m_currentPath.begin();
+    m_currentTarget = m_targetsForPath.begin();
 }
 
 InstructionModule::Instruction getTurnInstructionForNextNode(int diff)
@@ -62,21 +71,23 @@ InstructionModule::Instruction getTurnInstructionForNextNode(int diff)
 
     return InstructionModule::Instruction::NoOp;
 }
-std::vector<InstructionModule::Instruction> &&
+std::vector<InstructionModule::Instruction>
 InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, const RoboPosition &pos, const MazeGraph &graph) {
     std::vector<Instruction> ret;
-    if(nodesToDriveTo.front() == pos.currentNode)
-        nodesToDriveTo.erase(nodesToDriveTo.begin(), nodesToDriveTo.begin());
+    m_targetsForPath = nodesToDriveTo;
+
+    auto nodesSanitized = std::vector<int>(nodesToDriveTo.begin() + 1, nodesToDriveTo.end());
 
     auto rotation = pos.relativeRotationFromStart.rot;
-    auto targetDirection = graph.directionOfNodeFromPos(nodesToDriveTo.front(), pos);
+    auto targetDirection = graph.directionOfNodeFromPos(nodesSanitized.front(), pos);
     auto diff = targetDirection - rotation;
     ret.emplace_back(getTurnInstructionForNextNode(diff));
 
-    int lastNode = nodesToDriveTo.front();
-    for(auto id: nodesToDriveTo) {
+    int lastNode = pos.currentNode;
+    for(auto id: nodesSanitized) {
         diff = graph.directionOfNodeFromNode(lastNode, id);
-        ret.emplace_back(getTurnInstructionForNextNode(diff));
+        if(diff == 0)
+            ret.emplace_back(getTurnInstructionForNextNode(diff));
         ret.emplace_back(Instruction::Forward);
         lastNode = id;
     }
@@ -86,4 +97,18 @@ InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, 
     }), ret.end());*/
 
     return std::move(ret);
+}
+
+void InstructionModule::initialize(const RoboPosition &pos, const MazeGraph &maze) {
+    auto pathNodes = getListOfPathNodes(pos, maze);
+    auto instructions = parseNodeListToInstructions(pathNodes, pos, maze);
+    setInstructions(instructions);
+}
+
+int InstructionModule::getCurrentTargetID() {
+    return *m_currentTarget;
+}
+
+void InstructionModule::onHitNode() {
+    std::advance(m_currentTarget, 1);
 }

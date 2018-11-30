@@ -113,5 +113,6 @@ int MazeGraph::directionOfNodeFromNode(int nodeid, int targetNode) const {
             return edge.dir;
         }
     }
+    std::cout << "could not find for: " << nodeid << " to " << targetNode << std::endl;
     exit(2);
 }

@@ -20,9 +20,10 @@ public:
         int rot = 0;
     };
 
-    RoboPosition(int nodeNum, Direction d) : currentNode{nodeNum}, relativeRotationFromStart{d} {
+    RoboPosition(int nodeNum, Direction d) : currentNode{nodeNum}, relativeRotationFromStart{d}, targetNode{-99} {
     }
 
     int currentNode;
+    int targetNode;
     Direction relativeRotationFromStart;
 };

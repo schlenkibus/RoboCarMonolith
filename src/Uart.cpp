@@ -20,7 +20,7 @@ int open_port(const char* port)
     else
     {
         fcntl(fd, F_SETFL, 0);
-        std::cout << "port is open." << std::endl;
+        std::cout << "UART works!" << std::endl;
     }
     return(fd);
 }
