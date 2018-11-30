@@ -3,9 +3,6 @@
 #include "MazeGraph.h"
 
 MazeGraph::MazeGraph(std::vector<std::string> textualRepresenation) {
-    //Test!
-    parseNodeFromLine("0-6,55,2");
-
     auto it = textualRepresenation.begin();
     parseCount(*it);
     std::advance(it, 1);
@@ -14,10 +11,10 @@ MazeGraph::MazeGraph(std::vector<std::string> textualRepresenation) {
     parseEnd(*it);
 
     //Remove already parsed lines
-    textualRepresenation.erase(textualRepresenation.begin() + 3, textualRepresenation.end());
+    auto edgeText = std::vector<std::string>(textualRepresenation.begin() + 3, textualRepresenation.end());
 
-    m_nodes.reserve(textualRepresenation.size() * 2);
-    for(const auto &entry: textualRepresenation) {
+    m_nodes.reserve(edgeText.size() * 2);
+    for(const auto &entry: edgeText) {
        parseNodeFromLine(entry);
     }
 
@@ -48,17 +45,18 @@ void MazeGraph::parseNodeFromLine(const std::string &line) {
     //Oppsie Dooo No Magic happening here
     auto dashDelim = line.find_first_of('-');
     auto firstComma = line.find(',');
-    auto secondComma = line.find(',', firstComma);
+    auto secondComma = line.find_last_of(',');
     auto firstNodeNumber = std::stoi(line.substr(0, dashDelim));
     auto secondNodeNumber = std::stoi(line.substr(dashDelim + 1, firstComma - 2));
-    auto edgeLength = std::stoi(line.substr(firstComma + 1, secondComma - 1));
+    auto edgeLengthString = line.substr(firstComma + 1, secondComma - 2);
+    auto edgeLength = std::stoi(edgeLengthString);
     //SANITIZE ROATATION!!!!
-    auto rotation = std::stoi(line.substr(line.find(std::to_string(edgeLength)) + edgeLength.length() + 1));
+    auto rotation = std::stoi(line.substr(secondComma + 1));
 
     m_nodes.emplace_back(Node{firstNodeNumber});
     m_nodes.emplace_back(Node{secondNodeNumber});
-    m_edges.emplace_back(Edge(firstNodeNumber, secondNodeNumber, edgeLength, rotation));
-    m_edges.emplace_back(Edge(secondNodeNumber, firstNodeNumber, edgeLength, reverseDir(rotation)));
+    m_edges.emplace_back(Edge{firstNodeNumber, secondNodeNumber, edgeLength, rotation});
+    m_edges.emplace_back(Edge{secondNodeNumber, firstNodeNumber, edgeLength, reverseDir(rotation)});
 }
 
 void MazeGraph::parseCount(std::string &basic_string) {
@@ -78,18 +76,18 @@ void MazeGraph::parseStart(std::string &basic_string) {
 
 const std::string MazeGraph::toString(int currentId) const {
     std::string text;
-    text += "count - ";
+    text += "count_-_";
     text += std::to_string(countNodes);
     text += "\n";
-    text += "start - ";
+    text += "start_-_";
     text += std::to_string(currentId);
     text += "\n";
-    text += "end - ";
+    text += "end_-_";
     text += std::to_string(goalId);
     text += "\n";
     for(auto edge: m_edges) {
-        text += std::to_string(std::get<0>(edge)) + std::string("-") + std::to_string(std::get<1>(edge));
-        text += "," + std::to_string(std::get<2>(edge)) + std::string(",") + std::to_string(std::get<3>(edge)) + '\n';
+        text += std::to_string(edge.from) + std::string("-") + std::to_string(edge.to);
+        text += "," + std::to_string(edge.len) + std::string(",") + std::to_string(edge.dir) + '\n';
     }
     return text;
 }
@@ -97,8 +95,8 @@ const std::string MazeGraph::toString(int currentId) const {
 void MazeGraph::removeEdge(int from, int to) {
     auto it = m_edges.begin();
     for(auto edge: m_edges) {
-        if((std::get<0>(edge) == from && std::get<1>(edge) == to) ||
-           (std::get<1>(edge) == from && std::get<0>(edge) == to))
+        if((edge.from == from && edge.to == to) ||
+           (edge.to == from && edge.from == to))
             m_edges.erase(it);
         std::advance(it, 1);
     }
@@ -106,17 +104,14 @@ void MazeGraph::removeEdge(int from, int to) {
 
 int MazeGraph::directionOfNodeFromPos(int nodeid, const RoboPosition &pos) const {
     auto currentPos = pos.currentNode;
-    for(auto edge: m_edges) {
-        if(std::get<0>(edge) == currentPos && std::get<1>(edge) == nodeid) {
-            return std::get<3>(edge);
-        }
-    }
+    return directionOfNodeFromNode(currentPos, nodeid);
 }
 
 int MazeGraph::directionOfNodeFromNode(int nodeid, int targetNode) const {
     for(auto edge: m_edges) {
-        if(std::get<0>(edge) == nodeid && std::get<1>(edge) == targetNode) {
-            return std::get<3>(edge);
+        if(edge.from == nodeid && edge.to == targetNode) {
+            return edge.dir;
         }
     }
+    exit(2);
 }

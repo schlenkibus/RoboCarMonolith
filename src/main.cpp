@@ -3,6 +3,8 @@
 #include "data/MazeGraph.h"
 #include "MazeGrapherModule.h"
 #include "InstructionModule.h"
+#include "SignDetectionModule.h"
+#include "RoboBaseProxy.h"
 #include <thread>
 #include <chrono>
 
@@ -10,9 +12,11 @@
 
 int main(int argc, char** argv) {
     MazeGrapherModule module("/tmp/maze.png");
-    MazeGraph mazeRepresenation{module.createGraphFromImage()};
+    MazeGraph mazeRepresenation{module.mockGraph()};
     RoboPosition position{mazeRepresenation.startId, RoboPosition::Direction()};
     InstructionModule instructionModule{position, mazeRepresenation};
+    SignDetectionModule signModule;
+    RoboBaseProxy roboBaseProxy;
 
     return 0;
 

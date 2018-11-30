@@ -1,3 +1,4 @@
+#pragma once
 
 #include <string>
 #include <vector>
@@ -6,12 +7,23 @@
 
 class MazeGraph {
 public:
-    MazeGraph(std::vector<std::string> textualRepresenation);
+    explicit MazeGraph(std::vector<std::string> textualRepresenation);
     struct Node {
         int id;
+        friend bool operator< (const Node& lhs, const Node& rhs){
+            return lhs.id < rhs.id;
+        }
+    };
+    struct Edge {
+        Edge(int f, int t, int l, int d) : from(f), to{t}, len{l}, dir{d} {
+        }
+        int from;
+        int to;
+        int len;
+        int dir;
     };
     std::vector<Node> m_nodes;
-    std::vector<std::tuple<int, int, int, int>> m_edges;
+    std::vector<Edge> m_edges;
     void removeEdge(int from, int to);
     int countNodes;
     int startId;
