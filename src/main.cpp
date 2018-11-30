@@ -19,7 +19,7 @@ void sendInstructionToBase(Instruction i);
 Uart uart("/dev/ttyS0");
 
 int main() {
-    for(auto x = 0; x < std::numeric_limits<decltype(2)>::max(); x++) {
+    for(auto x = 0; x < 50000; x++) {
         uart.send('F');
     }
 
