@@ -96,7 +96,7 @@ InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, 
             auto targetRobotRot = graph.directionOfNodeFromNode(currentNode, realNextTarget);
             return getTurnInstructionForNextNode(targetRobotRot - currentRoboRot);
         };
-        ret.emplace_back(turnToFaceToNextPos(pos, nodesSanitized.front()));
+        ret.emplace_back(turnToFaceNextPos(pos, nodesSanitized.front()));
     }
 
     pos.targetNode = nodesSanitized.front();
