@@ -29,16 +29,16 @@ std::vector<std::string> MazeGrapherModule::getText() {
                 auto rot = line.substr(lastComma + 1);
                 signed int newRot = 0;
                 switch(std::stoi(rot)) {
-                    case -2:
-                        newRot = 0;
-                        break;
-                    case -1:
-                        newRot = 3;
-                        break;
-                    case 1:
+                    case 3:
                         newRot = 1;
                         break;
                     case 2:
+                        newRot = 0;
+                        break;
+                    case 1:
+                        newRot = 3;
+                        break;
+                    case 0:
                         newRot = 2;
                         break;
                     default:
