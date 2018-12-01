@@ -10,16 +10,44 @@
 
 
 int main(int argc, char** argv) {
-    using namespace std::chrono_literals;
+    /*using namespace std::chrono_literals;
     MazeGrapherModule module("/tmp/maze.txt");
     MazeGraph mazeRepresenation{module.getText()};
     RoboPosition position{mazeRepresenation.startId, RoboPosition::Direction()};
     InstructionModule instructionModule{position, mazeRepresenation};
-    SignDetectionModule signModule;
+    SignDetectionModule signModule;*/
+
     RoboBaseProxy roboBaseProxy;
 
     bool done = false;
+    std::string line;
+    while(!done) {
+        std::getline(std::cin, line);
+        InstructionModule::Instruction i;
+        switch(line[0]) {
+        case 'F':
+          i = InstructionModule::Instruction::Forward;
+          break;
+        case 'L':
+          i = InstructionModule::Instruction::Left90;
+          break;
+        case 'R':
+          i = InstructionModule::Instruction::Right90;
+          break;
+        case 'T':
+          i = InstructionModule::Instruction::Turn180;
+          break;;
+        case 'I':
+          exit(2);
+        default:
+          i = InstructionModule::Instruction::Beep;
+          break;
+        }
+        roboBaseProxy.sendInstructionAndWaitForReturn(i);
 
+    }
+
+/*
     auto updateRobotRotation = [&](InstructionModule::Instruction i) {
         if(i == InstructionModule::Instruction::Right90)
             position.relativeRotationFromStart.right();
