@@ -43,6 +43,10 @@ Uart::Uart(const char* port) {
     m_fd = configure_port(m_fd);
 }
 
+Uart::~Uart() {
+  close(m_fd);
+}
+
 void Uart::send(char charToSend) {
     const char* t = &charToSend;
     auto written = write(m_fd, t, 1);

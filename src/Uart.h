@@ -3,6 +3,7 @@
 class Uart {
 public:
     explicit Uart(const char* port);
+    ~Uart();
     void send(char charToSend);
     char receive();
 protected:

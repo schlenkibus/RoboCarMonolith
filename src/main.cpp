@@ -10,6 +10,7 @@
 
 
 int main(int argc, char** argv) {
+    using namespace std::chrono_literals;
     MazeGrapherModule module("/tmp/maze.txt");
     MazeGraph mazeRepresenation{module.getText()};
     RoboPosition position{mazeRepresenation.startId, RoboPosition::Direction()};
@@ -46,11 +47,6 @@ int main(int argc, char** argv) {
 
         if(instruction == InstructionModule::Instruction::Forward) {
             auto prediction = signModule.getPrediction();
-            if(position.currentNode == 9 && position.targetNode == 8)
-                prediction = SignDetectionModule::Object::Block;
-            if(position.currentNode == 6 && position.targetNode == 10)
-                prediction = SignDetectionModule::Object::Stop;
-            std::cout << "Predicting!\n";
 
             if(prediction == SignDetectionModule::Object::Stop) {
                 instruction = InstructionModule::Instruction::ForwardStop;
@@ -67,6 +63,7 @@ int main(int argc, char** argv) {
                     updateRobotRotation(instruction);
             }
             roboBaseProxy.sendInstructionAndWaitForReturn(instruction);
+            std::this_thread::sleep_for(1s);
             std::cout << "Robot doing: " << static_cast<char>(instruction) << std::endl;
         }
         if(instruction == InstructionModule::Instruction::End) {
