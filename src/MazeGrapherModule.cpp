@@ -16,7 +16,36 @@ std::vector<std::string> MazeGrapherModule::getText() {
         std::vector<std::string> ret;
         std::string line;
         while(std::getline(is, line)) {
-            ret.emplace_back(line);
+            if(line.find("count") != line.npos ||
+                line.find("start") != line.npos ||
+                line.find("end") != line.npos) {
+                ret.emplace_back(line);
+            } else {
+                if(line.size() <= 0)
+                    continue;
+                auto lastComma = line.find_last_of(',');
+                //Wenn Modul benutzt wird!
+                auto lineWithoutRot = line.substr(0, lastComma + 1);
+                auto rot = line.substr(lastComma + 1);
+                signed int newRot = 0;
+                switch(std::stoi(rot)) {
+                    case -2:
+                        newRot = 0;
+                        break;
+                    case -1:
+                        newRot = 3;
+                        break;
+                    case 1:
+                        newRot = 1;
+                        break;
+                    case 2:
+                        newRot = 2;
+                        break;
+                    default:
+                        exit(ErrorCodes::i(ErrorCodes::LogicError::IncorrectDirection));
+                }
+                ret.emplace_back(lineWithoutRot + std::to_string(newRot));
+            }
         }
         return ret;
     } else {
