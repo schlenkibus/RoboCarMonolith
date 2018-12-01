@@ -81,13 +81,7 @@ std::vector<InstructionModule::Instruction>
 InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, RoboPosition &pos,
                                                const MazeGraph &graph) {
 
-    auto turnToFaceNextPos = [&](RoboPosition& pos, int realNextTarget) {
-        auto currentNode = pos.currentNode;
-        auto targetNode = pos.targetNode;
-        auto currentRoboRot = graph.directionOfNodeFromNode(currentNode, targetNode);
-        auto targetRobotRot = graph.directionOfNodeFromNode(currentNode, realNextTarget);
-        return getTurnInstructionForNextNode(targetRobotRot - currentRoboRot);
-    };
+
 
     std::vector<Instruction> ret;
     m_targetsForPath = nodesToDriveTo;
@@ -95,6 +89,13 @@ InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, 
     auto nodesSanitized = std::vector<int>(nodesToDriveTo.begin() + 1, nodesToDriveTo.end());
 
     if(pos.targetNode != -99) {
+        auto turnToFaceNextPos = [&](RoboPosition& pos, int realNextTarget) {
+            auto currentNode = pos.currentNode;
+            auto targetNode = pos.targetNode;
+            auto currentRoboRot = graph.directionOfNodeFromNode(currentNode, targetNode);
+            auto targetRobotRot = graph.directionOfNodeFromNode(currentNode, realNextTarget);
+            return getTurnInstructionForNextNode(targetRobotRot - currentRoboRot);
+        };
         ret.emplace_back(turnToFaceToNextPos(pos, nodesSanitized.front()));
     }
 
