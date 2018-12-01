@@ -1,8 +1,4 @@
 #include <utility>
-
-#include <utility>
-
-#include <utility>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -50,8 +46,8 @@ InstructionModule::getListOfPathNodes(const RoboPosition &p, const MazeGraph &gr
     auto node = p.currentNode;
     auto graphText = graph.toString(node);
     //auto result = Client::performRequest("http://192.168.60.118:4447/request?graph=" + graphText);
-    auto result = Client::performRequest("http://10.6.9.174:4447/request?graph=" + graphText);
-    std::cout << "Got Back from Server: " << result << std::endl;
+    //auto result = Client::performRequest("http://10.6.9.174:4447/request?graph=" + graphText);
+    auto result = Client::performRequest("http://localhost:4447/request?graph="+ graphText);
     return parseAnswer(result);
 }
 

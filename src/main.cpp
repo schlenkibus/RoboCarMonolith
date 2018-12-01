@@ -11,7 +11,7 @@
 
 int main(int argc, char** argv) {
     MazeGrapherModule module("/tmp/maze.txt");
-    MazeGraph mazeRepresenation{module.mockGraph()}; //later getText();
+    MazeGraph mazeRepresenation{module.getText()};
     RoboPosition position{mazeRepresenation.startId, RoboPosition::Direction()};
     InstructionModule instructionModule{position, mazeRepresenation};
     SignDetectionModule signModule;
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
                 case InstructionModule::Instruction::Right90:
                     updateRobotRotation(instruction);
             }
-            //roboBaseProxy.sendInstructionAndWaitForReturn(instruction);
+            roboBaseProxy.sendInstructionAndWaitForReturn(instruction);
             std::cout << "Robot doing: " << static_cast<char>(instruction) << std::endl;
         }
         if(instruction == InstructionModule::Instruction::End) {
