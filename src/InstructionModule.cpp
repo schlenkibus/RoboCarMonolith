@@ -84,6 +84,8 @@ InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, 
 
     auto nodesSanitized = std::vector<int>(nodesToDriveTo.begin() + 1, nodesToDriveTo.end());
 
+    pos.relativeRotationFromStart.rot = graph.directionOfNodeFromNode(pos.currentNode, pos.targetNode);
+
     auto rotation = pos.relativeRotationFromStart.rot;
     auto targetDirection = graph.directionOfNodeFromPos(nodesSanitized.front(), pos);
     signed int diff = targetDirection - rotation;
@@ -97,7 +99,7 @@ InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, 
         auto targetRot = graph.directionOfNodeFromNode(lastNode, id);
         diff = targetRot - dir.rot;
         auto turnInstruction = getTurnInstructionForNextNode(diff);
-        ret.emplace_back(getTurnInstructionForNextNode(diff));
+        ret.emplace_back(turnInstruction);
         ret.emplace_back(Instruction::Forward);
         dir.rot = targetRot;
         lastNode = id;
