@@ -84,6 +84,9 @@ InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, 
 
     auto nodesSanitized = std::vector<int>(nodesToDriveTo.begin() + 1, nodesToDriveTo.end());
 
+    if(pos.targetNode == -99)
+        pos.targetNode = nodesSanitized.front();
+    
     pos.relativeRotationFromStart.rot = graph.directionOfNodeFromNode(pos.currentNode, pos.targetNode);
 
     auto rotation = pos.relativeRotationFromStart.rot;
