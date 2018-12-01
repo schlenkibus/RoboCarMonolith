@@ -1,6 +1,7 @@
 #include <iostream>
 #include <tuple>
 #include "MazeGraph.h"
+#include "../util/ErrorCodes.h"
 
 MazeGraph::MazeGraph(std::vector<std::string> textualRepresenation) {
     auto it = textualRepresenation.begin();
@@ -37,7 +38,7 @@ int reverseDir(int dir) {
             return 1;
         default:
             std::cerr << "__LINE__ NaN" << std::endl;
-            exit(99);
+            exit(ErrorCodes::i(ErrorCodes::LogicError::IncorrectDirection));
     }
 }
 
@@ -114,5 +115,5 @@ int MazeGraph::directionOfNodeFromNode(int nodeid, int targetNode) const {
         }
     }
     std::cout << "could not find for: " << nodeid << " to " << targetNode << std::endl;
-    exit(2);
+    exit(ErrorCodes::i(ErrorCodes::LogicError::NodeNotFound));
 }

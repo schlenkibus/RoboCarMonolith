@@ -6,7 +6,6 @@ class RoboPosition {
 public:
     class Direction {
     public:
-        Direction() : rot(0) {}
         void left() {
             rot -= 1;
             if(rot < 0)
@@ -16,6 +15,10 @@ public:
             rot += 1;
             if(rot > 3)
                 rot = 0;
+        }
+        void turn() {
+            left();
+            left();
         }
         int rot = 0;
     };

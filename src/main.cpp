@@ -19,6 +19,15 @@ int main(int argc, char** argv) {
 
     bool done = false;
 
+    auto updateRobotRotation = [&](InstructionModule::Instruction i) {
+        if(i == InstructionModule::Instruction::Right90)
+            position.relativeRotationFromStart.right();
+        if(i == InstructionModule::Instruction::Left90)
+            position.relativeRotationFromStart.left();
+        if(i == InstructionModule::Instruction::Turn180)
+            position.relativeRotationFromStart.turn();
+    };
+
     auto removeCurrentEdgeWeAreLookingAt = [&](){
         mazeRepresenation.removeEdge(position.currentNode, instructionModule.getCurrentTargetID());
         instructionModule.initialize(position, mazeRepresenation);
@@ -29,13 +38,18 @@ int main(int argc, char** argv) {
     auto loopBody = [&]() {
         if(lastInstruction == InstructionModule::Instruction::ForwardStop ||
            lastInstruction == InstructionModule::Instruction::Forward) {
-            instructionModule.onHitNode();
+            instructionModule.onHitNode(position);
         }
 
         auto instruction = instructionModule.getNextInstruction();
         lastInstruction = instruction;
+
         if(instruction == InstructionModule::Instruction::Forward) {
             auto prediction = signModule.getPrediction();
+            if(position.currentNode == 9 && position.targetNode == 8)
+                prediction = SignDetectionModule::Object::Block;
+            if(position.currentNode == 6 && position.targetNode == 10)
+                prediction = SignDetectionModule::Object::Stop;
             std::cout << "Predicting!\n";
 
             if(prediction == SignDetectionModule::Object::Stop) {
@@ -46,6 +60,12 @@ int main(int argc, char** argv) {
         }
 
         if(instruction != InstructionModule::Instruction::NoOp) {
+            switch(instruction) {
+                case InstructionModule::Instruction::Turn180:
+                case InstructionModule::Instruction::Left90:
+                case InstructionModule::Instruction::Right90:
+                    updateRobotRotation(instruction);
+            }
             //roboBaseProxy.sendInstructionAndWaitForReturn(instruction);
             std::cout << "Robot doing: " << static_cast<char>(instruction) << std::endl;
         }
@@ -56,7 +76,7 @@ int main(int argc, char** argv) {
     };
 
 
-    instructionModule.onHitNode();
+    instructionModule.onHitNode(position);
     do {
         if(!loopBody()) {
             removeCurrentEdgeWeAreLookingAt();

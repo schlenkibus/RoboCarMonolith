@@ -16,7 +16,7 @@ public:
     Instruction getNextInstruction();
     void setInstructions(std::vector<Instruction> newInstructions);
     std::vector<int> getListOfPathNodes(const RoboPosition &p, const MazeGraph &graph);
-    void onHitNode();
+    void onHitNode(RoboPosition& r);
     int getCurrentTargetID();
 
 protected:

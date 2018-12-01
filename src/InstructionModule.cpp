@@ -49,7 +49,8 @@ InstructionModule::getListOfPathNodes(const RoboPosition &p, const MazeGraph &gr
     //call with graphtext get list of ints <- nodes
     auto node = p.currentNode;
     auto graphText = graph.toString(node);
-    auto result = Client::performRequest("http://192.168.60.118:4447/request?graph=" + graphText);
+    //auto result = Client::performRequest("http://192.168.60.118:4447/request?graph=" + graphText);
+    auto result = Client::performRequest("http://10.6.9.174:4447/request?graph=" + graphText);
     std::cout << "Got Back from Server: " << result << std::endl;
     return parseAnswer(result);
 }
@@ -62,14 +63,23 @@ void InstructionModule::setInstructions(std::vector<InstructionModule::Instructi
 
 InstructionModule::Instruction getTurnInstructionForNextNode(int diff)
 {
-    if(std::abs(diff) == 2)
-        return InstructionModule::Instruction::Turn180;
-    else if(diff > 0)
-        return InstructionModule::Instruction::Right90;
-    else if(diff < 0)
-        return InstructionModule::Instruction::Left90;
-
-    return InstructionModule::Instruction::NoOp;
+    switch(diff) {
+        case -3:
+            return InstructionModule::Instruction::Right90;
+        case -2:
+            return InstructionModule::Instruction::Turn180;
+        case -1:
+            return InstructionModule::Instruction::Left90;
+        case 1:
+            return InstructionModule::Instruction::Right90;
+        case 2:
+            return InstructionModule::Instruction::Turn180;
+        case 3:
+            return InstructionModule::Instruction::Left90;
+        case 0:
+        default:
+            return InstructionModule::Instruction::NoOp;
+    }
 }
 std::vector<InstructionModule::Instruction>
 InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, const RoboPosition &pos, const MazeGraph &graph) {
@@ -80,15 +90,20 @@ InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, 
 
     auto rotation = pos.relativeRotationFromStart.rot;
     auto targetDirection = graph.directionOfNodeFromPos(nodesSanitized.front(), pos);
-    auto diff = targetDirection - rotation;
+    signed int diff = targetDirection - rotation;
     ret.emplace_back(getTurnInstructionForNextNode(diff));
+
+    RoboPosition::Direction dir;
+    dir.rot = pos.relativeRotationFromStart.rot;
 
     int lastNode = pos.currentNode;
     for(auto id: nodesSanitized) {
-        diff = graph.directionOfNodeFromNode(lastNode, id);
-        if(diff == 0)
-            ret.emplace_back(getTurnInstructionForNextNode(diff));
+        auto targetRot = graph.directionOfNodeFromNode(lastNode, id);
+        diff = targetRot - dir.rot;
+        auto turnInstruction = getTurnInstructionForNextNode(diff);
+        ret.emplace_back(getTurnInstructionForNextNode(diff));
         ret.emplace_back(Instruction::Forward);
+        dir.rot = targetRot;
         lastNode = id;
     }
 
@@ -109,6 +124,8 @@ int InstructionModule::getCurrentTargetID() {
     return *m_currentTarget;
 }
 
-void InstructionModule::onHitNode() {
+void InstructionModule::onHitNode(RoboPosition& r) {
+    r.currentNode = *m_currentTarget;
     std::advance(m_currentTarget, 1);
+    r.targetNode = *m_currentTarget;
 }
