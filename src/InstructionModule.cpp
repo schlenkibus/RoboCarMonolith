@@ -15,10 +15,9 @@
 #include <curl/curl.h>
 #include <assert.h>
 
-InstructionModule::InstructionModule(const RoboPosition& pos, const MazeGraph& maze) {
+InstructionModule::InstructionModule(RoboPosition &pos, const MazeGraph &maze) {
     initialize(pos, maze);
 }
-
 
 
 InstructionModule::Instruction InstructionModule::getNextInstruction() {
@@ -78,7 +77,8 @@ InstructionModule::Instruction getTurnInstructionForNextNode(int diff)
     }
 }
 std::vector<InstructionModule::Instruction>
-InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, const RoboPosition &pos, const MazeGraph &graph) {
+InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, RoboPosition &pos,
+                                               const MazeGraph &graph) {
     std::vector<Instruction> ret;
     m_targetsForPath = nodesToDriveTo;
 
@@ -110,7 +110,7 @@ InstructionModule::parseNodeListToInstructions(std::vector<int> nodesToDriveTo, 
     return std::move(ret);
 }
 
-void InstructionModule::initialize(const RoboPosition &pos, const MazeGraph &maze) {
+void InstructionModule::initialize(RoboPosition &pos, const MazeGraph &maze) {
     auto pathNodes = getListOfPathNodes(pos, maze);
     auto instructions = parseNodeListToInstructions(pathNodes, pos, maze);
     setInstructions(instructions);
